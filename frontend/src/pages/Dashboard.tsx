@@ -77,9 +77,9 @@ export default function Dashboard({ selectedSite, onConnect }: DashboardProps) {
         return () => { ws?.close() }
     }, [selectedSite])
 
-    // Refresh sites every 10s
+    // Refresh sites every 30s
     useEffect(() => {
-        const interval = setInterval(() => fetchSitesSummary().then(setSites), 10000)
+        const interval = setInterval(() => fetchSitesSummary().then(setSites), 30000)
         return () => clearInterval(interval)
     }, [])
 
@@ -113,8 +113,8 @@ export default function Dashboard({ selectedSite, onConnect }: DashboardProps) {
                     <button
                         onClick={() => setFeedMode('simulated')}
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${feedMode === 'simulated'
-                                ? 'bg-[#00d4ff20] text-[#00d4ff] border border-[#00d4ff30]'
-                                : 'text-[#8a9ab5] hover:text-white'
+                            ? 'bg-[#00d4ff20] text-[#00d4ff] border border-[#00d4ff30]'
+                            : 'text-[#8a9ab5] hover:text-white'
                             }`}
                     >
                         <Monitor className="w-3.5 h-3.5" /> Simulated
@@ -122,8 +122,8 @@ export default function Dashboard({ selectedSite, onConnect }: DashboardProps) {
                     <button
                         onClick={() => setFeedMode('camera')}
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${feedMode === 'camera'
-                                ? 'bg-red-500/15 text-red-400 border border-red-500/30'
-                                : 'text-[#8a9ab5] hover:text-white'
+                            ? 'bg-red-500/15 text-red-400 border border-red-500/30'
+                            : 'text-[#8a9ab5] hover:text-white'
                             }`}
                     >
                         <Camera className="w-3.5 h-3.5" /> Live Camera

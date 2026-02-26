@@ -19,7 +19,9 @@ def get_latest(site_id: str = "SITE-01", session: Session = Depends(get_session)
     result = session.exec(statement).first()
     if result is None:
         # DB is empty (fresh start) — return a synthetic reading instead of 500
-        return simulate_prediction(site_id)
+        from datetime import datetime
+        sim_data = simulate_prediction(site_id)
+        return Prediction(**sim_data, timestamp=datetime.fromisoformat(sim_data["timestamp"]))
     return result
 
 
@@ -62,6 +64,8 @@ def sites_summary(session: Session = Depends(get_session)):
             result.append(pred)
         else:
             # Return a synthetic entry so UI always has data
+            from datetime import datetime
             from services.simulator import simulate_prediction as sp
-            result.append(sp(site))
+            sim_data = sp(site)
+            result.append(Prediction(**sim_data, timestamp=datetime.fromisoformat(sim_data["timestamp"])))
     return result

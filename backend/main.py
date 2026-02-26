@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from database import create_db_and_tables
 from routes import prediction, alerts
-from routes import camera_prediction
+from routes import camera_prediction, pairing
 from services.websocket_manager import manager
 from services.simulator import run_simulator
 
@@ -39,10 +39,12 @@ app.add_middleware(
 app.include_router(prediction.router)
 app.include_router(alerts.router)
 app.include_router(camera_prediction.router)
+app.include_router(pairing.router)
 
 
 import json
 from routes.camera_prediction import process_ws_frame
+from services.pairing_manager import pairing_manager
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
@@ -54,8 +56,21 @@ async def websocket_endpoint(websocket: WebSocket):
                 continue
             try:
                 msg = json.loads(data)
-                if msg.get("type") == "camera_frame":
+                
+                # --- MOBILE JOINING A QR SESSION ---
+                if msg.get("type") == "JOIN_SESSION":
+                    session_id = msg.get("session_id")
+                    if session_id and pairing_manager.validate_and_connect(session_id):
+                        # Notify everyone (especially the waiting Dashboard) that this session is live
+                        await manager.broadcast({
+                            "type": "SESSION_CONNECTED",
+                            "session_id": session_id
+                        })
+                
+                # --- INCOMING CAMERA FRAME ---
+                elif msg.get("type") == "camera_frame":
                     await process_ws_frame(msg)
+                    
             except Exception:
                 pass
     except WebSocketDisconnect:

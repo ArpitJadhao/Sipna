@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { Camera, Monitor } from 'lucide-react'
+import { Camera, Monitor, QrCode } from 'lucide-react'
 import KPICards from '../components/dashboard/KPICards'
 import LiveMonitor from '../components/dashboard/LiveMonitor'
 import LiveCameraFeed from '../components/dashboard/LiveCameraFeed'
 import LiveRemoteFeed from '../components/dashboard/LiveRemoteFeed'
+import PairCameraModal from '../components/dashboard/PairCameraModal'
 import AlertsPanel from '../components/dashboard/AlertsPanel'
 import MultiSiteStatus from '../components/dashboard/MultiSiteStatus'
 import TrendChart from '../components/dashboard/TrendChart'
@@ -30,6 +31,7 @@ export default function Dashboard({ selectedSite, onConnect }: DashboardProps) {
     const [alerts, setAlerts] = useState<Alert[]>([])
     const [sites, setSites] = useState<Prediction[]>([])
     const [connected, setConnected] = useState(false)
+    const [pairModalOpen, setPairModalOpen] = useState(false)
     const [feedMode, setFeedMode] = useState<'simulated' | 'local_camera' | 'remote_stream'>('simulated')
     const [liveFrame, setLiveFrame] = useState<{ img: string, pred: Prediction } | null>(null)
     const wsRef = useRef<WebSocket | null>(null)
@@ -67,6 +69,11 @@ export default function Dashboard({ selectedSite, onConnect }: DashboardProps) {
                     setConnected(false)
                     onConnect(false)
                     setTimeout(connect, 3000)
+                },
+                (sessionId: string) => {
+                    // If a phone just scanned our QR code and successfully paired:
+                    setPairModalOpen(false)      // Auto-close scanning modal
+                    setFeedMode('remote_stream') // Auto-switch to watch stream
                 }
             )
 
@@ -108,6 +115,14 @@ export default function Dashboard({ selectedSite, onConnect }: DashboardProps) {
                 {/* Feed mode toggle */}
                 <div className="flex items-center gap-1 p-1 glass-card rounded-lg border border-[#1e2d40]">
                     <button
+                        onClick={() => setPairModalOpen(true)}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold transition-all bg-[#00d4ff]/10 text-[#00d4ff] hover:bg-[#00d4ff]/20 border border-[#00d4ff]/30 mr-2`}
+                    >
+                        <QrCode className="w-3.5 h-3.5" /> Pair Phone
+                    </button>
+                    <div className="w-px h-5 bg-[#1e2d40] mx-1"></div>
+
+                    <button
                         onClick={() => setFeedMode('simulated')}
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all ${feedMode === 'simulated'
                             ? 'bg-[#00d4ff20] text-[#00d4ff] border border-[#00d4ff30]'
@@ -141,6 +156,12 @@ export default function Dashboard({ selectedSite, onConnect }: DashboardProps) {
             <div className="fade-in-up">
                 <KPICards prediction={prediction} />
             </div>
+
+            <PairCameraModal
+                isOpen={pairModalOpen}
+                onClose={() => setPairModalOpen(false)}
+                wsConnected={connected}
+            />
 
             {/* Main grid: monitor/camera + alerts */}
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 fade-in-up">

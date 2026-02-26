@@ -27,16 +27,23 @@ export default function Navbar({ selectedSite, onSiteChange, connected }: Navbar
     return (
         <nav className="glass sticky top-0 z-50 h-16 flex items-center justify-between px-6 border-b border-[#1e2d40]">
             {/* Logo */}
-            <div className="flex items-center gap-3">
-                <div className="relative">
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center glow-cyan">
-                        <Droplets className="w-5 h-5 text-white" />
+            <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
+                    <div className="relative">
+                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center glow-cyan">
+                            <Droplets className="w-5 h-5 text-white" />
+                        </div>
+                        <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full pulse-live border-2 border-[#0a0e1a]" />
                     </div>
-                    <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full pulse-live border-2 border-[#0a0e1a]" />
+                    <div>
+                        <h1 className="text-sm font-bold gradient-text-cyan tracking-wide">AquaGuardian AI</h1>
+                        <p className="text-[10px] text-[#4a5568] tracking-widest uppercase">Industrial Monitor</p>
+                    </div>
                 </div>
-                <div>
-                    <h1 className="text-sm font-bold gradient-text-cyan tracking-wide">AquaGuardian AI</h1>
-                    <p className="text-[10px] text-[#4a5568] tracking-widest uppercase">Industrial Monitor</p>
+
+                {/* Role Badge */}
+                <div className="hidden lg:flex items-center bg-[#00d4ff]/10 border border-[#00d4ff]/20 px-2.5 py-1 rounded text-[10px] font-mono text-[#00d4ff] tracking-wider ml-2">
+                    MONITORING STATION
                 </div>
             </div>
 
@@ -57,8 +64,8 @@ export default function Navbar({ selectedSite, onSiteChange, connected }: Navbar
                                 key={site}
                                 onClick={() => { onSiteChange(site); setSiteOpen(false) }}
                                 className={`w-full text-left px-4 py-2.5 text-sm transition-all duration-150 ${site === selectedSite
-                                        ? 'text-[#00d4ff] bg-[#00d4ff10]'
-                                        : 'text-[#8a9ab5] hover:text-white hover:bg-white/5'
+                                    ? 'text-[#00d4ff] bg-[#00d4ff10]'
+                                    : 'text-[#8a9ab5] hover:text-white hover:bg-white/5'
                                     }`}
                             >
                                 {site}
@@ -75,8 +82,8 @@ export default function Navbar({ selectedSite, onSiteChange, connected }: Navbar
                     <p className="text-[10px] text-[#4a5568]">{formatDate(time)}</p>
                 </div>
                 <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-300 ${connected
-                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-                        : 'bg-red-500/10 text-red-400 border border-red-500/20'
+                    ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                    : 'bg-red-500/10 text-red-400 border border-red-500/20'
                     }`}>
                     {connected
                         ? <><Wifi className="w-3.5 h-3.5" /><span>LIVE</span><div className="w-1.5 h-1.5 bg-emerald-400 rounded-full pulse-live" /></>

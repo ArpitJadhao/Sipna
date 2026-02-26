@@ -70,12 +70,24 @@ export async function acknowledgeAlert(alertId: number): Promise<void> {
     await fetch(`${BASE_URL}/api/alerts/${alertId}/acknowledge`, { method: 'PATCH' })
 }
 
+export async function fetchPairingSession(): Promise<string | null> {
+    try {
+        const res = await fetch(`${BASE_URL}/api/pair/create-session`, { method: 'POST' })
+        if (!res.ok) return null
+        const data = await res.json()
+        return data.session_id
+    } catch {
+        return null
+    }
+}
+
 // ─── WebSocket ───────────────────────────────────────────────────────────────
 
 export function createWebSocket(
     onPrediction: (pred: Prediction) => void,
     onLiveStream?: (img: string, pred: Prediction) => void,
-    onError?: () => void
+    onError?: () => void,
+    onSessionConnected?: (sessionId: string) => void
 ): WebSocket {
     const ws = new WebSocket(WS_URL)
 
@@ -86,6 +98,8 @@ export function createWebSocket(
                 onPrediction(msg.data as Prediction)
             } else if (msg.type === 'live_stream') {
                 onLiveStream?.(msg.image, msg.prediction as Prediction)
+            } else if (msg.type === 'SESSION_CONNECTED') {
+                onSessionConnected?.(msg.session_id)
             }
         } catch { /* ignore malformed */ }
     }

@@ -1,10 +1,16 @@
-import { useState } from 'react'
+import { useState, Suspense, lazy } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import Navbar from './components/layout/Navbar'
-import Sidebar from './components/layout/Sidebar'
-import Dashboard from './pages/Dashboard'
-import Analytics from './pages/Analytics'
-import AlertsPage from './pages/Alerts'
+import { isMobileDevice } from './utils/deviceDetector'
+
+// ── Lazy Load Heavy Dashboard Components ────────────────────────────────────
+const Navbar = lazy(() => import('./components/layout/Navbar'))
+const Sidebar = lazy(() => import('./components/layout/Sidebar'))
+const Dashboard = lazy(() => import('./pages/Dashboard'))
+const Analytics = lazy(() => import('./pages/Analytics'))
+const AlertsPage = lazy(() => import('./pages/Alerts'))
+
+// ── Lazy Load Mobile Node Components ────────────────────────────────────────
+const MobileCameraPage = lazy(() => import('./pages/MobileCameraPage'))
 
 function PlaceholderPage({ title }: { title: string }) {
   return (
@@ -18,30 +24,51 @@ function PlaceholderPage({ title }: { title: string }) {
   )
 }
 
-export default function App() {
+function FullSpinner() {
+  return (
+    <div className="h-screen w-screen bg-[#060a12] flex items-center justify-center text-[#00d4ff]">
+      {/* Simple CSS spinner fallback */}
+      <div className="w-8 h-8 border-2 border-t-[#00d4ff] border-r-transparent border-b-[#00d4ff] border-l-transparent rounded-full animate-spin" />
+    </div>
+  )
+}
+
+function DesktopDashboardLayout() {
   const [selectedSite, setSelectedSite] = useState('SITE-01')
   const [connected, setConnected] = useState(false)
 
   return (
-    <BrowserRouter>
-      <div className="flex flex-col h-screen overflow-hidden">
-        <Navbar
-          selectedSite={selectedSite}
-          onSiteChange={setSelectedSite}
-          connected={connected}
-        />
-        <div className="flex flex-1 overflow-hidden">
-          <Sidebar />
-          <Routes>
-            <Route path="/" element={<Dashboard selectedSite={selectedSite} onConnect={setConnected} />} />
-            <Route path="/analytics" element={<Analytics selectedSite={selectedSite} />} />
-            <Route path="/alerts" element={<AlertsPage selectedSite={selectedSite} />} />
-            <Route path="/sites" element={<PlaceholderPage title="Sites Management" />} />
-            <Route path="/settings" element={<PlaceholderPage title="Settings" />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </div>
+    <div className="flex flex-col h-screen overflow-hidden">
+      <Navbar
+        selectedSite={selectedSite}
+        onSiteChange={setSelectedSite}
+        connected={connected}
+      />
+      <div className="flex flex-1 overflow-hidden">
+        <Sidebar />
+        <Routes>
+          <Route path="/" element={<Dashboard selectedSite={selectedSite} onConnect={setConnected} />} />
+          <Route path="/analytics" element={<Analytics selectedSite={selectedSite} />} />
+          <Route path="/alerts" element={<AlertsPage selectedSite={selectedSite} />} />
+          <Route path="/sites" element={<PlaceholderPage title="Sites Management" />} />
+          <Route path="/settings" element={<PlaceholderPage title="Settings" />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </div>
+    </div>
+  )
+}
+
+export default function App() {
+  const isMobile = isMobileDevice()
+  const isPairRoute = window.location.pathname === '/pair'
+
+  // Hardware-based root routing logic
+  return (
+    <BrowserRouter>
+      <Suspense fallback={<FullSpinner />}>
+        {isPairRoute || isMobile ? <MobileCameraPage /> : <DesktopDashboardLayout />}
+      </Suspense>
     </BrowserRouter>
   )
 }
